@@ -74,12 +74,12 @@ hasselblad-watermark/
 
 1. **构建镜像**
     ```bash
-docker build -t hasselblad-watermark .
+   docker build -t hasselblad-watermark .
     ```
 
 2. **运行容器**
     ```bash
-docker run -d -p 5001:5001 --name my-watermark hasselblad-watermark
+   docker run -d -p 5001:5001 --name my-watermark hasselblad-watermark
     ```
 
 3. **访问**
