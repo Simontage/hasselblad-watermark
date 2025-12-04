@@ -48,21 +48,21 @@ hasselblad-watermark/
 
 1. **克隆仓库**
     ```bash
-git clone https://github.com/Simontage/hasselblad-watermark.git
-cd hasselblad-watermark
+   git clone https://github.com/Simontage/hasselblad-watermark.git
+   cd hasselblad-watermark
     ```
 
 2. **安装依赖**
     建议使用虚拟环境：
     ```bash
-python3 -m venv venv
-source venv/bin/activate  # Windows 使用: venv\Scripts\activate
-pip install -r requirements.txt
+   python3 -m venv venv
+   source venv/bin/activate  # Windows 使用: venv\Scripts\activate
+   pip install -r requirements.txt
     ```
 
 3. **运行应用**
     ```bash
-python app.py
+      python app.py
     ```
 
 4. **访问**
