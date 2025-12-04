@@ -1,0 +1,22 @@
+# Python
+venv/
+*.pyc
+__pycache__/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Static files
+static/*
+!static/.gitkeep
+
+# Fonts
+# Uncomment if you don't want to include fonts
+# fonts/

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasselblad Style Watermark Generator</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        h1 { margin-top: 0; color: #fff; text-align: center; letter-spacing: 2px; font-weight: 300; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #aaa; font-size: 0.9em; }
+        
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+        }
+        input[type="text"]:focus { border-color: #e95420; }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #e95420; /* Hasselblad Orange */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 10px;
+        }
+        button:hover { background: #d04616; }
+        button:active { transform: scale(0.98); }
+        
+        .preview-area {
+            margin-top: 30px;
+            position: relative;
+            min-height: 300px;
+            border: 2px dashed #444;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: 
+                linear-gradient(45deg, #222 25%, transparent 25%), 
+                linear-gradient(-45deg, #222 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #222 75%), 
+                linear-gradient(-45deg, transparent 75%, #222 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        
+        #sourceImage {
+            max-width: 100%;
+            max-height: 700px;
+            display: none;
+            z-index: 1;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        #watermarkImage {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            display: none;
+            z-index: 2;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .download-link {
+            flex: 1;
+            display: block;
+            text-align: center;
+            color: #e95420;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            padding: 12px;
+            border: 1px solid #e95420;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+        .download-link:hover { background: rgba(233, 84, 32, 0.1); }
+        
+        .download-link.svg {
+            border-color: #fff;
+            color: #fff;
+        }
+        .download-link.svg:hover { background: rgba(255, 255, 255, 0.1); }
+        
+        .loading { 
+            display: none; 
+            text-align: center; 
+            margin-top: 15px; 
+            color: #aaa;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>HASSELBLAD STYLE</h1>
+    
+    <div class="form-group">
+        <label>1. 上传摄影作品</label>
+        <input type="file" id="fileInput" accept="image/*">
+    </div>
+    
+    <div class="form-group">
+        <label>2. 自定义文字</label>
+        <input type="text" id="textInput" value="H A S S E L B L A D" placeholder="输入文字">
+    </div>
+
+    <button onclick="generate()">生成专属水印</button>
+    <div class="loading" id="loading">正在分析色彩并制作水印，请稍候...</div>
+
+    <div class="preview-area" id="previewArea">
+        <img id="sourceImage" alt="Original">
+        <img id="watermarkImage" alt="Watermark">
+    </div>
+
+    <div class="btn-group" id="downloadGroup" style="display:none;">
+        <a id="downloadBtn" class="download-link" href="#" download="watermark.png">⬇️ 下载 PNG (图片)</a>
+        <a id="downloadSvgBtn" class="download-link svg" href="#" download="watermark.svg">⬇️ 下载 SVG (矢量)</a>
+    </div>
+</div>
+
+<script>
+    async function generate() {
+        const fileInput = document.getElementById('fileInput');
+        const textInput = document.getElementById('textInput');
+        const loading = document.getElementById('loading');
+        const downloadGroup = document.getElementById('downloadGroup');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadSvgBtn = document.getElementById('downloadSvgBtn');
+        
+        if (!fileInput.files[0]) {
+            alert('请先选择一张图片');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', fileInput.files[0]);
+        formData.append('text', textInput.value);
+        // 后端现在默认处理 V5 色彩且无斜体，无需传递额外参数
+
+        loading.style.display = 'block';
+        downloadGroup.style.display = 'none';
+        
+        try {
+            const response = await fetch('/generate', { method: 'POST', body: formData });
+            const data = await response.json();
+
+            if (data.error) {
+                alert('发生错误: ' + data.error);
+                return;
+            }
+
+            const sourceImg = document.getElementById('sourceImage');
+            const watermarkImg = document.getElementById('watermarkImage');
+            const timestamp = new Date().getTime();
+            
+            sourceImg.src = data.source_url + '?t=' + timestamp;
+            watermarkImg.src = data.watermark_url + '?t=' + timestamp;
+            
+            sourceImg.onload = () => {
+                sourceImg.style.display = 'block';
+                watermarkImg.style.display = 'block';
+            };
+
+            downloadBtn.href = data.watermark_url;
+            downloadSvgBtn.href = data.svg_url;
+            downloadGroup.style.display = 'flex';
+
+        } catch (err) {
+            alert('请求失败，请检查网络');
+            console.error(err);
+        } finally {
+            loading.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
